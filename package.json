@@ -1,0 +1,19 @@
+{
+  "name": "sentra-layanan-ukm",
+  "version": "1.0.0",
+  "type": "module",
+  "scripts": {
+    "start": "bun run src/index.ts",
+    "dev": "bun --watch run src/index.ts",
+    "test": "bun test"
+  },
+  "dependencies": {
+    "@elysiajs/html": "latest",
+    "@elysiajs/static": "latest",
+    "elysia": "latest",
+    "zod": "latest"
+  },
+  "devDependencies": {
+    "bun-types": "latest"
+  }
+}

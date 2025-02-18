@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sentra Layanan UKM - Admin Dashboard</title>
+    <link href="https://cdn.jsdelivr.net/npm/water.css@2/out/water.css" rel="stylesheet">
+    <style>
+        .nav { margin: 20px 0; }
+        .nav a { margin-right: 10px; }
+        .table { width: 100%; }
+        .hidden { display: none; }
+    </style>
+</head>
+<body>
+    <h1>Master Admin Dashboard</h1>
+    <nav class="nav">
+        <a href="#" data-page="transportation">Transportation Modes</a>
+        <a href="#" data-page="cargo">Cargo Types</a>
+        <a href="#" data-page="facilities">Facilities</a>
+    </nav>
+
+    <div id="transportation-page">
+        <h2>Transportation Modes</h2>
+        <form id="transportation-form">
+            <input type="hidden" name="id">
+            <label>Name: <input type="text" name="mode_name" required></label>
+            <label>Description: <textarea name="description"></textarea></label>
+            <label>Capacity (kg): <input type="number" name="capacity_kg" required></label>
+            <label>Base Price: <input type="number" name="base_price" step="0.01" required></label>
+            <label>Price per KM: <input type="number" name="price_per_km" step="0.01" required></label>
+            <button type="submit">Save</button>
+            <button type="reset">Clear</button>
+        </form>
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>Name</th>
+                    <th>Capacity</th>
+                    <th>Base Price</th>
+                    <th>Price/KM</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody id="transportation-list"></tbody>
+        </table>
+    </div>
+
+    <div id="cargo-page" class="hidden">
+        <h2>Cargo Types</h2>
+        <form id="cargo-form">
+            <input type="hidden" name="id">
+            <label>Name: <input type="text" name="type_name" required></label>
+            <label>Description: <textarea name="description"></textarea></label>
+            <label>Handling Instructions: <textarea name="handling_instructions"></textarea></label>
+            <label>Price Multiplier: <input type="number" name="price_multiplier" step="0.01" required></label>
+            <button type="submit">Save</button>
+            <button type="reset">Clear</button>
+        </form>
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>Name</th>
+                    <th>Description</th>
+                    <th>Price Multiplier</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody id="cargo-list"></tbody>
+        </table>
+    </div>
+
+    <div id="facilities-page" class="hidden">
+        <h2>Facilities</h2>
+        <form id="facilities-form">
+            <input type="hidden" name="id">
+            <label>Name: <input type="text" name="name" required></label>
+            <label>Description: <textarea name="description"></textarea></label>
+            <button type="submit">Save</button>
+            <button type="reset">Clear</button>
+        </form>
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>Name</th>
+                    <th>Description</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody id="facilities-list"></tbody>
+        </table>
+    </div>
+
+    <script src="/js/auth.js"></script>
+    <script src="/js/api.js"></script>
+    <script src="/js/app.js"></script>
+</body>
+</html>
