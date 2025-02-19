@@ -1,7 +1,7 @@
 -- Core Tables
 
 -- Users table - Base table for all user types
-CREATE TABLE users (
+CREATE TABLE IF NOT EXISTS users (
     user_id INTEGER PRIMARY KEY AUTOINCREMENT,
     username TEXT NOT NULL UNIQUE,
     password_hash TEXT NOT NULL,
@@ -15,7 +15,7 @@ CREATE TABLE users (
 );
 
 -- Businesses (Mitra) table
-CREATE TABLE businesses (
+CREATE TABLE IF NOT EXISTS businesses (
     business_id INTEGER PRIMARY KEY AUTOINCREMENT,
     user_id INTEGER NOT NULL,
     business_name TEXT NOT NULL,
@@ -29,7 +29,7 @@ CREATE TABLE businesses (
 );
 
 -- Drivers table
-CREATE TABLE drivers (
+CREATE TABLE IF NOT EXISTS drivers (
     driver_id INTEGER PRIMARY KEY AUTOINCREMENT,
     user_id INTEGER NOT NULL,
     license_number TEXT NOT NULL UNIQUE,
@@ -42,7 +42,7 @@ CREATE TABLE drivers (
 );
 
 -- Transportation Modes (Angkutan)
-CREATE TABLE transportation_modes (
+CREATE TABLE IF NOT EXISTS transportation_modes (
     mode_id INTEGER PRIMARY KEY AUTOINCREMENT,
     mode_name TEXT NOT NULL UNIQUE,
     description TEXT,
@@ -53,7 +53,7 @@ CREATE TABLE transportation_modes (
 );
 
 -- Cargo Types (Muatan)
-CREATE TABLE cargo_types (
+CREATE TABLE IF NOT EXISTS cargo_types (
     cargo_type_id INTEGER PRIMARY KEY AUTOINCREMENT,
     type_name TEXT NOT NULL UNIQUE,
     description TEXT,
@@ -63,7 +63,7 @@ CREATE TABLE cargo_types (
 );
 
 -- Orders
-CREATE TABLE orders (
+CREATE TABLE IF NOT EXISTS orders (
     order_id INTEGER PRIMARY KEY AUTOINCREMENT,
     customer_id INTEGER NOT NULL,
     driver_id INTEGER,
@@ -88,7 +88,7 @@ CREATE TABLE orders (
 );
 
 -- Order Status History
-CREATE TABLE order_status_history (
+CREATE TABLE IF NOT EXISTS order_status_history (
     history_id INTEGER PRIMARY KEY AUTOINCREMENT,
     order_id INTEGER NOT NULL,
     status TEXT NOT NULL,
@@ -98,7 +98,7 @@ CREATE TABLE order_status_history (
 );
 
 -- Driver Reviews
-CREATE TABLE driver_reviews (
+CREATE TABLE IF NOT EXISTS driver_reviews (
     review_id INTEGER PRIMARY KEY AUTOINCREMENT,
     order_id INTEGER NOT NULL UNIQUE,
     rating INTEGER NOT NULL CHECK (rating BETWEEN 1 AND 5),
@@ -108,7 +108,7 @@ CREATE TABLE driver_reviews (
 );
 
 -- Facilities
-CREATE TABLE facilities (
+CREATE TABLE IF NOT EXISTS facilities (
     facility_id INTEGER PRIMARY KEY AUTOINCREMENT,
     name TEXT NOT NULL UNIQUE,
     description TEXT,
@@ -116,7 +116,7 @@ CREATE TABLE facilities (
 );
 
 -- Transportation Mode Facilities (Many-to-Many relationship)
-CREATE TABLE mode_facilities (
+CREATE TABLE IF NOT EXISTS mode_facilities (
     mode_id INTEGER NOT NULL,
     facility_id INTEGER NOT NULL,
     PRIMARY KEY (mode_id, facility_id),
@@ -125,13 +125,13 @@ CREATE TABLE mode_facilities (
 );
 
 -- Triggers for updated_at timestamps
-CREATE TRIGGER users_update_trigger 
+CREATE TRIGGER IF NOT EXISTS users_update_trigger 
 AFTER UPDATE ON users
 BEGIN
     UPDATE users SET updated_at = CURRENT_TIMESTAMP WHERE user_id = NEW.user_id;
 END;
 
-CREATE TRIGGER orders_update_trigger 
+CREATE TRIGGER IF NOT EXISTS orders_update_trigger 
 AFTER UPDATE ON orders
 BEGIN
     UPDATE orders SET updated_at = CURRENT_TIMESTAMP WHERE order_id = NEW.order_id;

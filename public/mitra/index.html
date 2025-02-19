@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mitra Admin Dashboard - Sentra Layanan UKM</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+</head>
+<body class="bg-gray-100">
+    <nav class="bg-white shadow-lg">
+        <div class="max-w-7xl mx-auto px-4">
+            <div class="flex justify-between h-16">
+                <div class="flex">
+                    <div class="flex-shrink-0 flex items-center">
+                        <span class="text-xl font-bold">Sentra Layanan UKM</span>
+                    </div>
+                </div>
+                <div class="flex items-center">
+                    <span id="mitraName" class="text-gray-700"></span>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <div class="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
+        <!-- Tabs -->
+        <div class="border-b border-gray-200">
+            <nav class="-mb-px flex">
+                <a href="#profile" class="tab-link whitespace-nowrap py-4 px-8 border-b-2 font-medium text-sm border-indigo-500 text-indigo-600">Profile</a>
+                <a href="#services" class="tab-link whitespace-nowrap py-4 px-8 border-b-2 font-medium text-sm border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300">Services</a>
+                <a href="#drivers" class="tab-link whitespace-nowrap py-4 px-8 border-b-2 font-medium text-sm border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300">Drivers</a>
+                <a href="#orders" class="tab-link whitespace-nowrap py-4 px-8 border-b-2 font-medium text-sm border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300">Orders</a>
+            </nav>
+        </div>
+
+        <!-- Content -->
+        <div class="mt-6">
+            <!-- Profile Tab -->
+            <div id="profile-tab" class="tab-content">
+                <div class="bg-white shadow sm:rounded-lg">
+                    <div class="px-4 py-5 sm:p-6">
+                        <h3 class="text-lg leading-6 font-medium text-gray-900">Business Profile</h3>
+                        <form id="profile-form" class="mt-5 space-y-4">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700">Business Name</label>
+                                <input type="text" name="name" class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700">Address</label>
+                                <textarea name="address" class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2"></textarea>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700">Contact Information</label>
+                                <input type="tel" name="phone" placeholder="Phone" class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2">
+                                <input type="email" name="email" placeholder="Email" class="mt-2 block w-full border border-gray-300 rounded-md shadow-sm p-2">
+                            </div>
+                            <button type="submit" class="inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700">
+                                Save Changes
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Services Tab -->
+            <div id="services-tab" class="tab-content hidden">
+                <div class="bg-white shadow sm:rounded-lg">
+                    <div class="px-4 py-5 sm:p-6">
+                        <div class="flex justify-between items-center">
+                            <h3 class="text-lg leading-6 font-medium text-gray-900">Service Instances</h3>
+                            <button id="new-service-btn" class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700">
+                                New Service
+                            </button>
+                        </div>
+                        <div class="mt-5">
+                            <div id="service-list" class="space-y-4"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Drivers Tab -->
+            <div id="drivers-tab" class="tab-content hidden">
+                <div class="bg-white shadow sm:rounded-lg">
+                    <div class="px-4 py-5 sm:p-6">
+                        <div class="flex justify-between items-center">
+                            <h3 class="text-lg leading-6 font-medium text-gray-900">Drivers</h3>
+                            <button id="new-driver-btn" class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700">
+                                Add Driver
+                            </button>
+                        </div>
+                        <div class="mt-5">
+                            <div id="driver-list" class="space-y-4"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Orders Tab -->
+            <div id="orders-tab" class="tab-content hidden">
+                <div class="bg-white shadow sm:rounded-lg">
+                    <div class="px-4 py-5 sm:p-6">
+                        <h3 class="text-lg leading-6 font-medium text-gray-900">Orders</h3>
+                        <div class="mt-5">
+                            <div id="order-list" class="space-y-4"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="/mitra/js/app.js"></script>
+</body>
+</html> 
