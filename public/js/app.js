@@ -1,6 +1,21 @@
 // UI Controller
 class App {
+    static isDev = window.location.hostname === 'localhost';
+    static errorHandler(error, context) {
+        if (this.isDev) {
+            console.error(`Error in ${context}:`, error);
+        }
+        return `Error: ${error.message || 'An unexpected error occurred'}`;
+    }
+
     static init() {
+        window.onerror = (msg, url, line) => {
+            if (this.isDev) {
+                console.error('Global error:', { msg, url, line });
+            }
+            return false;
+        };
+
         // Navigation
         document.querySelectorAll('.nav a').forEach(link => {
             link.addEventListener('click', (e) => {
@@ -26,11 +41,10 @@ class App {
             () => this.loadFacilities()
         );
 
-        // Initial load
         this.showPage('transportation');
     }
 
-    static setupFormHandler(formId, apiCall, reloadData) {
+    static async setupFormHandler(formId, apiCall, reloadData) {
         const form = document.getElementById(formId);
         form.addEventListener('submit', async (e) => {
             e.preventDefault();
@@ -42,40 +56,47 @@ class App {
                 form.reset();
                 await reloadData();
             } catch (error) {
-                alert('Error: ' + error.message);
+                alert(this.errorHandler(error, `${formId} submission`));
             }
         });
     }
 
     static showPage(page) {
-        // Hide all pages
         document.querySelectorAll('#transportation-page, #cargo-page, #facilities-page')
             .forEach(el => el.classList.add('hidden'));
         
-        // Show selected page
         document.getElementById(`${page}-page`).classList.remove('hidden');
         
-        // Load data
-        switch (page) {
-            case 'transportation':
-                this.loadTransportationModes();
-                break;
-            case 'cargo':
-                this.loadCargoTypes();
-                break;
-            case 'facilities':
-                this.loadFacilities();
-                break;
+        const loaders = {
+            transportation: this.loadTransportationModes,
+            cargo: this.loadCargoTypes,
+            facilities: this.loadFacilities
+        };
+
+        if (loaders[page]) {
+            loaders[page].call(this);
+        }
+    }
+
+    static async renderList(elementId, getData, rowRenderer) {
+        const list = document.getElementById(elementId);
+        try {
+            const items = await getData();
+            list.innerHTML = items.length ? 
+                items.map(rowRenderer).join('') : 
+                `<tr><td colspan="5">No items found</td></tr>`;
+        } catch (error) {
+            list.innerHTML = `<tr><td colspan="5">${this.errorHandler(error, `Loading ${elementId}`)}</td></tr>`;
         }
     }
 
     static async loadTransportationModes() {
-        const list = document.getElementById('transportation-list');
-        try {
-            const modes = await Api.getTransportationModes();
-            list.innerHTML = modes.map(mode => `
+        await this.renderList(
+            'transportation-list',
+            Api.getTransportationModes,
+            mode => `
                 <tr>
-                    <td>${mode.mode_name}</td>
+                    <td>${this.escapeHtml(mode.mode_name)}</td>
                     <td>${mode.capacity_kg}</td>
                     <td>${mode.base_price}</td>
                     <td>${mode.price_per_km}</td>
@@ -84,121 +105,121 @@ class App {
                         <button onclick="App.deleteTransportationMode(${mode.mode_id})">Delete</button>
                     </td>
                 </tr>
-            `).join('');
-        } catch (error) {
-            list.innerHTML = '<tr><td colspan="5">Error loading data</td></tr>';
-        }
+            `
+        );
     }
 
     static async loadCargoTypes() {
-        const list = document.getElementById('cargo-list');
-        try {
-            const types = await Api.getCargoTypes();
-            list.innerHTML = types.map(type => `
+        await this.renderList(
+            'cargo-list',
+            Api.getCargoTypes,
+            type => `
                 <tr>
-                    <td>${type.type_name}</td>
-                    <td>${type.description || ''}</td>
+                    <td>${this.escapeHtml(type.type_name)}</td>
+                    <td>${this.escapeHtml(type.description || '')}</td>
                     <td>${type.price_multiplier}</td>
                     <td>
                         <button onclick="App.editCargoType(${type.cargo_type_id})">Edit</button>
                         <button onclick="App.deleteCargoType(${type.cargo_type_id})">Delete</button>
                     </td>
                 </tr>
-            `).join('');
-        } catch (error) {
-            list.innerHTML = '<tr><td colspan="4">Error loading data</td></tr>';
-        }
+            `
+        );
     }
 
     static async loadFacilities() {
-        const list = document.getElementById('facilities-list');
-        try {
-            const facilities = await Api.getFacilities();
-            list.innerHTML = facilities.map(facility => `
+        await this.renderList(
+            'facilities-list',
+            Api.getFacilities,
+            facility => `
                 <tr>
-                    <td>${facility.name}</td>
-                    <td>${facility.description || ''}</td>
+                    <td>${this.escapeHtml(facility.name)}</td>
+                    <td>${this.escapeHtml(facility.description || '')}</td>
                     <td>
                         <button onclick="App.editFacility(${facility.facility_id})">Edit</button>
                         <button onclick="App.deleteFacility(${facility.facility_id})">Delete</button>
                     </td>
                 </tr>
-            `).join('');
-        } catch (error) {
-            list.innerHTML = '<tr><td colspan="3">Error loading data</td></tr>';
-        }
+            `
+        );
     }
 
-    static async deleteTransportationMode(id) {
-        if (confirm('Are you sure you want to delete this transportation mode?')) {
+    static async deleteItem(id, apiCall, confirmMessage, reloadData) {
+        if (confirm(confirmMessage)) {
             try {
-                await Api.deleteTransportationMode(id);
-                this.loadTransportationModes();
+                await apiCall(id);
+                await reloadData();
             } catch (error) {
-                alert('Error deleting transportation mode');
+                alert(this.errorHandler(error, 'Deleting item'));
             }
         }
     }
 
-    static async deleteCargoType(id) {
-        if (confirm('Are you sure you want to delete this cargo type?')) {
-            try {
-                await Api.deleteCargoType(id);
-                this.loadCargoTypes();
-            } catch (error) {
-                alert('Error deleting cargo type');
-            }
-        }
+    static deleteTransportationMode(id) {
+        return this.deleteItem(
+            id, 
+            Api.deleteTransportationMode,
+            'Are you sure you want to delete this transportation mode?',
+            () => this.loadTransportationModes()
+        );
     }
 
-    static async deleteFacility(id) {
-        if (confirm('Are you sure you want to delete this facility?')) {
-            try {
-                await Api.deleteFacility(id);
-                this.loadFacilities();
-            } catch (error) {
-                alert('Error deleting facility');
-            }
-        }
+    static deleteCargoType(id) {
+        return this.deleteItem(
+            id,
+            Api.deleteCargoType,
+            'Are you sure you want to delete this cargo type?',
+            () => this.loadCargoTypes()
+        );
+    }
+
+    static deleteFacility(id) {
+        return this.deleteItem(
+            id,
+            Api.deleteFacility,
+            'Are you sure you want to delete this facility?',
+            () => this.loadFacilities()
+        );
     }
 
     static fillForm(formId, data) {
         const form = document.getElementById(formId);
         Object.entries(data).forEach(([key, value]) => {
             const input = form.elements[key];
-            if (input) {
-                input.value = value;
-            }
+            if (input) input.value = value;
         });
     }
 
-    static async editTransportationMode(id) {
+    static async editItem(id, apiCall, formId) {
         try {
-            const mode = await Api.getTransportationMode(id);
-            this.fillForm('transportation-form', mode);
+            const item = await apiCall(id);
+            this.fillForm(formId, item);
         } catch (error) {
-            alert('Error loading transportation mode');
+            alert(this.errorHandler(error, `Loading item for edit`));
         }
     }
 
-    static async editCargoType(id) {
-        try {
-            const type = await Api.getCargoType(id);
-            this.fillForm('cargo-form', type);
-        } catch (error) {
-            alert('Error loading cargo type');
-        }
+    static editTransportationMode(id) {
+        return this.editItem(id, Api.getTransportationMode, 'transportation-form');
     }
 
-    static async editFacility(id) {
-        try {
-            const facility = await Api.getFacility(id);
-            this.fillForm('facilities-form', facility);
-        } catch (error) {
-            alert('Error loading facility');
-        }
+    static editCargoType(id) {
+        return this.editItem(id, Api.getCargoType, 'cargo-form');
+    }
+
+    static editFacility(id) {
+        return this.editItem(id, Api.getFacility, 'facilities-form');
+    }
+
+    static escapeHtml(unsafe) {
+        if (!unsafe) return '';
+        return unsafe
+            .replace(/&/g, "&amp;")
+            .replace(/</g, "&lt;")
+            .replace(/>/g, "&gt;")
+            .replace(/"/g, "&quot;")
+            .replace(/'/g, "&#039;");
     }
 }
 
-// Initialize app when DOM is loaded
 document.addEventListener('DOMContentLoaded', () => App.init());

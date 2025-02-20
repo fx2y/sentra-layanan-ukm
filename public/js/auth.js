@@ -1,27 +1,52 @@
 class Auth {
     static login(username, password) {
-        localStorage.setItem('auth', btoa(`${username}:${password}`));
+        try {
+            if (!username || !password) {
+                throw new Error('Username and password are required');
+            }
+            localStorage.setItem('auth', btoa(`${username}:${password}`));
+            return true;
+        } catch (error) {
+            if (window.location.hostname === 'localhost') {
+                console.error('Login failed:', error.message);
+            }
+            return false;
+        }
     }
 
     static getAuthHeader() {
-        const auth = localStorage.getItem('auth');
-        return auth ? `Basic ${auth}` : null;
+        try {
+            const auth = localStorage.getItem('auth');
+            if (!auth) return null;
+            // Validate stored auth format
+            const decoded = atob(auth);
+            if (!decoded.includes(':')) {
+                this.logout();
+                return null;
+            }
+            return `Basic ${auth}`;
+        } catch {
+            this.logout();
+            return null;
+        }
     }
 
     static isLoggedIn() {
-        return !!localStorage.getItem('auth');
+        return !!this.getAuthHeader();
     }
 
     static logout() {
         localStorage.removeItem('auth');
+        window.location.reload();
     }
 }
 
-// Check login status and redirect if needed
+// Handle login flow
 if (!Auth.isLoggedIn()) {
     const username = prompt('Username:');
     const password = prompt('Password:');
-    if (username && password) {
-        Auth.login(username, password);
+    if (!Auth.login(username, password)) {
+        alert('Invalid credentials. Please try again.');
+        window.location.reload();
     }
 }

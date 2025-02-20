@@ -5,6 +5,8 @@ class Api {
             'Content-Type': 'application/json'
         };
 
+        const isDev = window.location.hostname === 'localhost';
+        
         try {
             const response = await fetch(`/api${endpoint}`, {
                 ...options,
@@ -12,12 +14,16 @@ class Api {
             });
             
             if (!response.ok) {
-                throw new Error(`HTTP error! status: ${response.status}`);
+                const error = await response.json();
+                throw new Error(error.error || `HTTP error! status: ${response.status}`);
             }
             
             return await response.json();
         } catch (error) {
-            console.error('API Error:', error);
+            // Only log in development
+            if (isDev) {
+                console.error(`API Error (${endpoint}):`, error.message);
+            }
             throw error;
         }
     }

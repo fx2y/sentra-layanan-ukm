@@ -5,15 +5,26 @@
   "scripts": {
     "start": "bun run src/index.ts",
     "dev": "bun --watch run src/index.ts",
-    "test": "bun test"
+    "test": "bun test",
+    "test:coverage": "bun test --coverage",
+    "lint": "eslint . --ext .ts",
+    "lint:fix": "eslint . --ext .ts --fix",
+    "prepare": "husky install"
   },
   "dependencies": {
-    "@elysiajs/html": "latest",
-    "@elysiajs/static": "latest",
-    "elysia": "latest",
-    "zod": "latest"
+    "@elysiajs/html": "^0.7.3",
+    "@elysiajs/static": "^0.7.1",
+    "elysia": "^0.7.29",
+    "pino": "^8.16.1",
+    "zod": "^3.22.4"
   },
   "devDependencies": {
-    "bun-types": "latest"
+    "@types/node": "^20.8.9",
+    "@typescript-eslint/eslint-plugin": "^6.9.0",
+    "@typescript-eslint/parser": "^6.9.0",
+    "bun-types": "^1.0.7",
+    "eslint": "^8.52.0",
+    "husky": "^8.0.3",
+    "pino-pretty": "^10.2.3"
   }
 }

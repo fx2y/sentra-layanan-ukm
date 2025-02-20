@@ -1,0 +1,11 @@
+#!/bin/sh
+. "$(dirname "$0")/_/husky.sh"
+
+# Run TypeScript compilation check
+bun tsc --noEmit
+
+# Run ESLint
+bun run lint
+
+# Run tests
+bun test

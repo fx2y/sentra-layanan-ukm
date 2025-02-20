@@ -1,4 +1,5 @@
 import { Database } from 'bun:sqlite';
+import logger from './utils/logger';
 
 // Initialize database connection
 const db = new Database('data.db');
@@ -166,3 +167,19 @@ async function seedDatabase() {
 }
 
 seedDatabase();
+
+try {
+  // Insert test transportation modes
+  db.query(`
+    INSERT INTO transportation_modes (mode_name, description, capacity_kg, base_price, price_per_km)
+    VALUES 
+      ('Truck Small', 'Small delivery truck', 1000, 100000, 5000),
+      ('Truck Medium', 'Medium delivery truck', 3000, 200000, 7000)
+  `).run();
+
+  logger.info('Test data seeded successfully');
+} catch (error) {
+  logger.error({ error }, 'Failed to seed test data');
+} finally {
+  db.close();
+}

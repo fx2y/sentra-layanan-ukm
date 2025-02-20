@@ -1,27 +1,52 @@
-import { Database } from 'bun:sqlite';
+import { DatabaseDebugger } from '../utils/database';
+import { NotFoundError } from '../utils/errors';
+import { z } from 'zod';
+
+const CargoTypeData = z.object({
+    type_name: z.string().min(1),
+    description: z.string(),
+    handling_instructions: z.string(),
+    price_multiplier: z.number().positive()
+});
+
+type CargoType = z.infer<typeof CargoTypeData>;
 
 export class CargoTypeRepository {
-    constructor(private db: Database) {}
+    constructor(private db: DatabaseDebugger) {}
 
-    getAll() {
-        return this.db.query('SELECT * FROM cargo_types').all();
+    async getAll(): Promise<CargoType[]> {
+        const result = await this.db.query<CargoType[]>('SELECT * FROM cargo_types');
+        return result || [];
     }
 
-    getById(id: number) {
-        return this.db.query('SELECT * FROM cargo_types WHERE cargo_type_id = $id')
-            .get({ $id: id });
+    async getById(id: number): Promise<CargoType> {
+        const result = await this.db.query<CargoType[]>(
+            'SELECT * FROM cargo_types WHERE cargo_type_id = $id',
+            { $id: id }
+        );
+        if (!result?.length) throw new NotFoundError('Cargo type');
+        return result[0];
     }
 
-    create(data: any) {
-        return this.db.query(`
+    async create(data: CargoType): Promise<CargoType> {
+        const validated = CargoTypeData.parse(data);
+        const result = await this.db.query<CargoType[]>(`
             INSERT INTO cargo_types (type_name, description, handling_instructions, price_multiplier)
             VALUES ($name, $description, $instructions, $multiplier)
             RETURNING *
-        `).get(data);
+        `, {
+            $name: validated.type_name,
+            $description: validated.description,
+            $instructions: validated.handling_instructions,
+            $multiplier: validated.price_multiplier
+        });
+        if (!result?.length) throw new Error('Failed to create cargo type');
+        return result[0];
     }
 
-    update(id: number, data: any) {
-        return this.db.query(`
+    async update(id: number, data: CargoType): Promise<CargoType> {
+        const validated = CargoTypeData.parse(data);
+        const result = await this.db.query<CargoType[]>(`
             UPDATE cargo_types 
             SET type_name = $name,
                 description = $description,
@@ -29,11 +54,23 @@ export class CargoTypeRepository {
                 price_multiplier = $multiplier
             WHERE cargo_type_id = $id
             RETURNING *
-        `).get({ ...data, $id: id });
+        `, {
+            $id: id,
+            $name: validated.type_name,
+            $description: validated.description,
+            $instructions: validated.handling_instructions,
+            $multiplier: validated.price_multiplier
+        });
+        if (!result?.length) throw new NotFoundError('Cargo type');
+        return result[0];
     }
 
-    delete(id: number) {
-        return this.db.query('DELETE FROM cargo_types WHERE cargo_type_id = $id')
-            .run({ $id: id });
+    async delete(id: number): Promise<{ success: boolean }> {
+        const result = await this.db.query<{ changes: number }>(
+            'DELETE FROM cargo_types WHERE cargo_type_id = $id', 
+            { $id: id }
+        );
+        if (!result?.changes) throw new NotFoundError('Cargo type');
+        return { success: true };
     }
 }

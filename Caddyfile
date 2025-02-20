@@ -1,0 +1,22 @@
+localhost {
+    # Master Admin Dashboard
+    handle /admin/* {
+        reverse_proxy localhost:3000
+    }
+
+    # Mitra Admin Dashboard
+    handle /mitra/* {
+        reverse_proxy localhost:3000
+    }
+
+    # API endpoints
+    handle /api/* {
+        reverse_proxy localhost:3000
+    }
+
+    # Static files
+    handle /* {
+        root * public
+        file_server
+    }
+}
