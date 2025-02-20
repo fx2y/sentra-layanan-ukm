@@ -17,6 +17,11 @@
     "allowJs": true,
     "isolatedModules": true,
     "esModuleInterop": true,
+    "jsxImportSource": "react",
+    "typeRoots": [
+      "./node_modules/@types",
+      "./src/types"
+    ],
     "types": [
       "bun-types",
       "@types/react",

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 
 type Service = {
@@ -12,13 +12,13 @@ type Service = {
   facilities: string;
 };
 
-type ServiceListProps = {
+interface ServiceListProps {
   search?: string;
   modeId?: number;
   cargoTypeId?: number;
-};
+}
 
-export const ServiceList: React.FC<ServiceListProps> = ({ search, modeId, cargoTypeId }) => {
+export function ServiceList({ search, modeId, cargoTypeId }: ServiceListProps) {
   const [services, setServices] = useState<Service[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -104,4 +104,4 @@ export const ServiceList: React.FC<ServiceListProps> = ({ search, modeId, cargoT
       ))}
     </div>
   );
-}; 
+} 

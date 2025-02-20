@@ -29,7 +29,7 @@ type ApiResponse<T> = T & {
   error?: string;
 };
 
-export const OrderForm: React.FC = () => {
+export function OrderForm() {
   const { serviceId } = useParams<{ serviceId: string }>();
   const navigate = useNavigate();
   const [service, setService] = useState<Service | null>(null);
@@ -245,4 +245,4 @@ export const OrderForm: React.FC = () => {
       </div>
     </div>
   );
-}; 
+} 
