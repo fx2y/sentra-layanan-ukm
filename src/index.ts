@@ -9,6 +9,8 @@ import { mitraProfileRoutes } from './routes/mitra/profile';
 import { serviceInstanceRoutes } from './routes/mitra/service-instances';
 import { driverRoutes } from './routes/mitra/drivers';
 import { orderRoutes } from './routes/mitra/orders';
+import { customerServiceRoutes } from './routes/customer/services';
+import { customerOrderRoutes } from './routes/customer/orders';
 import { logger, createRequestLogger } from './utils/logger';
 import { validateEnv } from './utils/config';
 import { HealthCheck } from './utils/health';
@@ -34,8 +36,13 @@ const db = new Database(env.DATABASE_PATH);
 const dbDebugger = new DatabaseDebugger(db);
 const healthCheck = new HealthCheck(db);
 
+type AppStore = {
+  reqLogger?: ReturnType<typeof createRequestLogger>;
+  trackResponse?: (status: number, error: Error) => void;
+};
+
 // Request tracking middleware with performance monitoring
-const requestTracking = (app: Elysia) =>
+const requestTracking = (app: Elysia<{ store: AppStore }>) =>
   app.derive(({ request }) => {
     const reqLogger = createRequestLogger(request);
     const requestId = reqLogger.bindings().requestId as string;
@@ -67,7 +74,7 @@ const requestTracking = (app: Elysia) =>
   });
 
 // Auth middleware with simpler debugging
-const auth = (app: Elysia) =>
+const auth = (app: Elysia<{ store: AppStore }>) =>
   app.derive(({ headers, store: { reqLogger } }) => {
     if (!reqLogger) {
       throw new Error('Request logger not initialized');
@@ -100,81 +107,86 @@ const auth = (app: Elysia) =>
   });
 
 // Initialize server
-const app = new Elysia()
-    .onRequest(({ request, store }) => {
-        if (!store.reqLogger) {
-            store.reqLogger = createRequestLogger(request);
-        }
-    })
-    .use(html())
-    .use(staticPlugin())
-    .use(requestTracking)
-    .use(auth)
-    .get('/health', async ({ store: { reqLogger } }) => {
-        const status = await healthCheck.check();
-        if (process.env.DEBUG === 'true') {
-            return { 
-                ...status, 
-                debug: { memory: memoryMonitor.getStats() } 
-            };
-        }
-        return status;
-    })
-    .get('/debug', ({ store: { reqLogger } }) => {
-        if (process.env.DEBUG !== 'true') {
-            return { error: 'Debug mode not enabled' };
-        }
+const app = new Elysia<{ store: AppStore }>()
+  .onRequest(({ request, store }) => {
+    if (!store.reqLogger) {
+      store.reqLogger = createRequestLogger(request);
+    }
+  })
+  .use(html())
+  .use(staticPlugin())
+  .use(requestTracking)
+  .use(auth)
+  .get('/health', async ({ store: { reqLogger } }) => {
+    const status = await healthCheck.check();
+    if (process.env.DEBUG === 'true') {
+      return { 
+        ...status, 
+        debug: { memory: memoryMonitor.getStats() } 
+      };
+    }
+    return status;
+  })
+  .get('/debug', ({ store: { reqLogger } }) => {
+    if (process.env.DEBUG !== 'true') {
+      return { error: 'Debug mode not enabled' };
+    }
 
-        return {
-            memory: memoryMonitor.getStats(),
-            database: {
-                slowQueries: dbDebugger.getSlowQueries()
-            },
-            process: {
-                uptime: process.uptime(),
-                pid: process.pid
-            }
-        };
-    })
-    .use((app) => {
-        setupTransportationModeRoutes(app, dbDebugger);
-        setupCargoTypeRoutes(app, dbDebugger);
-        setupFacilityRoutes(app, dbDebugger);
-        return app;
-    })
-    .use(mitraProfileRoutes)
-    .use(serviceInstanceRoutes)
-    .use(driverRoutes)
-    .use(orderRoutes)
-    .get('/mitra/', () => {
-        return new Response(Bun.file('public/mitra/index.html'));
-    })
-    .onError(({ error, set, store }) => {
-        const status = error instanceof AppError ? error.status : 500;
-        set.status = status;
-        
-        if (store?.trackResponse) {
-            store.trackResponse(status, error);
-        }
+    return {
+      memory: memoryMonitor.getStats(),
+      database: {
+        slowQueries: dbDebugger.getSlowQueries()
+      },
+      process: {
+        uptime: process.uptime(),
+        pid: process.pid
+      }
+    };
+  })
+  .use((app) => {
+    setupTransportationModeRoutes(app, dbDebugger);
+    setupCargoTypeRoutes(app, dbDebugger);
+    setupFacilityRoutes(app, dbDebugger);
+    return app;
+  })
+  .use(mitraProfileRoutes)
+  .use(serviceInstanceRoutes)
+  .use(driverRoutes)
+  .use(orderRoutes)
+  .use(customerServiceRoutes)
+  .use(customerOrderRoutes)
+  .get('/mitra/', () => {
+    return new Response(Bun.file('public/mitra/index.html'));
+  })
+  .get('/', () => {
+    return new Response(Bun.file('public/customer/index.html'));
+  })
+  .onError(({ error, set, store }) => {
+    const status = error instanceof AppError ? error.status : 500;
+    set.status = status;
+    
+    if (store?.trackResponse) {
+      store.trackResponse(status, error);
+    }
 
-        const response = {
-            error: error instanceof AppError ? error.message : 'Internal Server Error',
-            code: error instanceof AppError ? error.code : undefined,
-            requestId: store?.reqLogger?.bindings().requestId
-        };
+    const response = {
+      error: error instanceof AppError ? error.message : 'Internal Server Error',
+      code: error instanceof AppError ? error.code : undefined,
+      requestId: store?.reqLogger?.bindings().requestId
+    };
 
-        if (process.env.DEBUG === 'true' && error instanceof Error) {
-            Object.assign(response, {
-                debug: { stack: error.stack }
-            });
-        }
+    if (process.env.DEBUG === 'true' && error instanceof Error) {
+      Object.assign(response, {
+        debug: { stack: error.stack }
+      });
+    }
 
-        return response;
-    })
-    .listen(env.PORT);
+    return response;
+  })
+  .listen(env.PORT);
 
 logger.info({
-    msg: '🦊 Mitra Admin API is running',
-    port: env.PORT,
-    environment: env.NODE_ENV
+  msg: '🦊 Sentra Layanan UKM API is running',
+  port: env.PORT,
+  environment: env.NODE_ENV
 });

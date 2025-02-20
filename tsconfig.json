@@ -1,16 +1,27 @@
 {
   "compilerOptions": {
-    "target": "esnext",
+    "lib": ["ESNext", "DOM", "DOM.Iterable"],
     "module": "esnext",
-    "moduleResolution": "node",
-    "types": ["bun-types"],
-    "esModuleInterop": true,
+    "target": "esnext",
+    "moduleResolution": "bundler",
+    "moduleDetection": "force",
+    "allowImportingTsExtensions": true,
+    "noEmit": true,
+    "composite": true,
     "strict": true,
+    "downlevelIteration": true,
     "skipLibCheck": true,
-    "baseUrl": ".",
-    "paths": {
-      "@/*": ["src/*"]
-    }
+    "jsx": "react-jsx",
+    "allowSyntheticDefaultImports": true,
+    "forceConsistentCasingInFileNames": true,
+    "allowJs": true,
+    "isolatedModules": true,
+    "esModuleInterop": true,
+    "types": [
+      "bun-types",
+      "@types/react",
+      "@types/react-dom"
+    ]
   },
   "include": ["src/**/*"],
   "exclude": ["node_modules"]
